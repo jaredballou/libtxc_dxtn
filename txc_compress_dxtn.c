@@ -255,7 +255,7 @@ static void storedxtencodedblock( GLubyte *blkaddr, GLubyte srccolors[4][4][4], 
    }
 
 
-   for (i = 0; i < 3; i ++) {
+   for (i = 0; i < 3; i++) {
       cv[0][i] = bestcolor[0][i];
       cv[1][i] = bestcolor[1][i];
       cv[2][i] = (bestcolor[0][i] * 2 + bestcolor[1][i]) / 3;
@@ -282,44 +282,49 @@ static void storedxtencodedblock( GLubyte *blkaddr, GLubyte srccolors[4][4][4], 
          bits |= enc << (2 * (j * 4 + i));
       }
    }
-   for (i = 0; i < 3; i ++) {
-      cv[2][i] = (bestcolor[0][i] + bestcolor[1][i]) / 2;
-      /* this isn't used. Looks like the black color constant can only be used
-         with RGB_DXT1 if I read the spec correctly (note though that the radeon gpu disagrees,
-         it will decode 3 to black even with DXT3/5), and due to how the color searching works
-         it won't get used even then */
-      cv[3][i] = 0;
-   }
-   testerror2 = 0;
-   for (j = 0; j < numypixels; j++) {
-      for (i = 0; i < numxpixels; i++) {
-         pixerrorbest = 0xffffffff;
-         if ((type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) && (srccolors[j][i][3] <= ALPHACUT)) {
-            enc = 3;
-            pixerrorbest = 0; /* don't calculate error */
-         }
-         else {
-            /* we're calculating the same what we have done already for colors 0-1 above... */
-            for (colors = 0; colors < 3; colors++) {
-               colordist = srccolors[j][i][0] - cv[colors][0];
-               pixerror = colordist * colordist * REDWEIGHT;
-               colordist = srccolors[j][i][1] - cv[colors][1];
-               pixerror += colordist * colordist * GREENWEIGHT;
-               colordist = srccolors[j][i][2] - cv[colors][2];
-               pixerror += colordist * colordist * BLUEWEIGHT;
-               if (pixerror < pixerrorbest) {
-                  pixerrorbest = pixerror;
-                  /* need to exchange colors later */
-                  if (colors > 1) enc = colors;
-                  else enc = colors ^ 1;
+   /* some hw might disagree but actually decoding should always use 4-color encoding
+      for non-dxt1 formats */
+   if (type == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) {
+      for (i = 0; i < 3; i++) {
+         cv[2][i] = (bestcolor[0][i] + bestcolor[1][i]) / 2;
+         /* this isn't used. Looks like the black color constant can only be used
+            with RGB_DXT1 if I read the spec correctly (note though that the radeon gpu disagrees,
+            it will decode 3 to black even with DXT3/5), and due to how the color searching works
+            it won't get used even then */
+         cv[3][i] = 0;
+      }
+      testerror2 = 0;
+      for (j = 0; j < numypixels; j++) {
+         for (i = 0; i < numxpixels; i++) {
+            pixerrorbest = 0xffffffff;
+            if ((type == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) && (srccolors[j][i][3] <= ALPHACUT)) {
+               enc = 3;
+               pixerrorbest = 0; /* don't calculate error */
+            }
+            else {
+               /* we're calculating the same what we have done already for colors 0-1 above... */
+               for (colors = 0; colors < 3; colors++) {
+                  colordist = srccolors[j][i][0] - cv[colors][0];
+                  pixerror = colordist * colordist * REDWEIGHT;
+                  colordist = srccolors[j][i][1] - cv[colors][1];
+                  pixerror += colordist * colordist * GREENWEIGHT;
+                  colordist = srccolors[j][i][2] - cv[colors][2];
+                  pixerror += colordist * colordist * BLUEWEIGHT;
+                  if (pixerror < pixerrorbest) {
+                     pixerrorbest = pixerror;
+                     /* need to exchange colors later */
+                     if (colors > 1) enc = colors;
+                     else enc = colors ^ 1;
+                  }
                }
             }
+            testerror2 += pixerrorbest;
+            bits2 |= enc << (2 * (j * 4 + i));
          }
-         testerror2 += pixerrorbest;
-         bits2 |= enc << (2 * (j * 4 + i));
       }
+   } else {
+      testerror2 = 0xffffffff;
    }
-
 
    /* finally we're finished, write back colors and bits */
    if ((testerror > testerror2) || (haveAlpha)) {
@@ -368,7 +373,7 @@ static void encodedxtcolorblockfaster( GLubyte *blkaddr, GLubyte srccolors[4][4]
    for (j = 0; j < numypixels; j++) {
       for (i = 0; i < numxpixels; i++) {
          /* don't use this as a base color if the pixel will get black/transparent anyway */
-         if ((type != GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) || (srccolors[j][i][3] <= ALPHACUT)) {
+         if ((type != GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) || (srccolors[j][i][3] > ALPHACUT)) {
             testcv = srccolors[j][i][0] * srccolors[j][i][0] * REDWEIGHT +
                      srccolors[j][i][1] * srccolors[j][i][1] * GREENWEIGHT +
                      srccolors[j][i][2] * srccolors[j][i][2] * BLUEWEIGHT;
