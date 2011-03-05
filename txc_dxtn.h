@@ -22,6 +22,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef _TXC_DXTN_H
+#define _TXC_DXTN_H
+
 #include <GL/gl.h>
 
 typedef GLubyte GLchan;
@@ -44,3 +47,5 @@ void fetch_2d_texel_rgba_dxt5(GLint srcRowStride, const GLubyte *pixdata,
 void tx_compress_dxtn(GLint srccomps, GLint width, GLint height,
 		      const GLubyte *srcPixData, GLenum destformat,
 		      GLubyte *dest, GLint dstRowStride);
+
+#endif /* _TXC_DXTN_H */
