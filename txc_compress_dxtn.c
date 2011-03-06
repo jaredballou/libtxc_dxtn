@@ -1,6 +1,6 @@
 /*
  * libtxc_dxtn
- * Version:  0.1
+ * Version:  1.0
  *
  * Copyright (C) 2004  Roland Scheidegger   All Rights Reserved.
  *
