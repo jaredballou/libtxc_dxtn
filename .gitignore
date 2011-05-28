@@ -1,0 +1,9 @@
+*.so
+*.o
+Makefile.in
+aclocal.m4
+autom4te.cache/
+build-aux/
+configure
+libtxc_dxtn-*.tar.gz
+m4/
