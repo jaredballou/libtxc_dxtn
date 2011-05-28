@@ -6,4 +6,9 @@ autom4te.cache/
 build-aux/
 configure
 libtxc_dxtn-*.tar.gz
+libtxc_dxtn-*.tar.bz2
 m4/
+config.log
+config.status
+libtool
+Makefile
