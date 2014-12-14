@@ -25,7 +25,11 @@
 #ifndef _TXC_DXTN_H
 #define _TXC_DXTN_H
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 typedef GLubyte GLchan;
 #define UBYTE_TO_CHAN(b)  (b)
